@@ -1,0 +1,333 @@
+{
+  "final_model": "Random Forest",
+  "final_test_gini": 34.3438780071089,
+  "benchmark_gini": 37.9,
+  "gini_difference": -3.5561219928911,
+  "reference_date": "2015-12-20",
+  "customers": 23896,
+  "test_bad_rate": 0.041986330032082575,
+  "engineered_features": [
+    "total_diff_lastpaymt_opened_dt",
+    "mean_diff_lastpaymt_opened_dt",
+    "payment_history_avg_dpd_0_29_bucket",
+    "payment_history_mean_length",
+    "Ratio_currbalance_creditlimit",
+    "count_enquiry_recency_90",
+    "count_enquiry_recency_365",
+    "mean_diff_open_enquiry_dt",
+    "max_freq_enquiry"
+  ],
+  "skipped_features": {
+    "min_months_last_30_plus": "Needs the month order inside the payment-history string, which is not confirmed.",
+    "utilisation_trend": "Needs several balance readings over time; the data has one balance per account.",
+    "perc_unsecured_others": "Needs a mapping from account-type codes to secured/unsecured, which is not provided."
+  },
+  "selected_features_count": 40,
+  "cv_table": [
+    {
+      "Model": "Random Forest",
+      "CV ROC-AUC (mean)": 0.6594211278,
+      "CV ROC-AUC (std)": 0.0226468049
+    },
+    {
+      "Model": "Logistic Regression",
+      "CV ROC-AUC (mean)": 0.6568637858,
+      "CV ROC-AUC (std)": 0.0146272035
+    },
+    {
+      "Model": "LightGBM",
+      "CV ROC-AUC (mean)": 0.6362030311,
+      "CV ROC-AUC (std)": 0.0098122114
+    },
+    {
+      "Model": "XGBoost",
+      "CV ROC-AUC (mean)": 0.6346183914,
+      "CV ROC-AUC (std)": 0.0108100058
+    },
+    {
+      "Model": "Decision Tree",
+      "CV ROC-AUC (mean)": 0.6010153699,
+      "CV ROC-AUC (std)": 0.0084605694
+    }
+  ],
+  "test_results": [
+    {
+      "Model": "Logistic Regression",
+      "Accuracy": 0.6151485563,
+      "Precision (bad)": 0.0684691011,
+      "Recall (bad)": 0.6478405316,
+      "F1 (bad)": 0.1238488409,
+      "ROC-AUC": 0.6812411356,
+      "Gini (%)": 36.2482271288
+    },
+    {
+      "Model": "LightGBM (tuned)",
+      "Accuracy": 0.7312037941,
+      "Precision (bad)": 0.0791925466,
+      "Recall (bad)": 0.5083056478,
+      "F1 (bad)": 0.1370353784,
+      "ROC-AUC": 0.6759999187,
+      "Gini (%)": 35.1999837467
+    },
+    {
+      "Model": "Random Forest",
+      "Accuracy": 0.9499232808,
+      "Precision (bad)": 0.1081081081,
+      "Recall (bad)": 0.0265780731,
+      "F1 (bad)": 0.0426666667,
+      "ROC-AUC": 0.67171939,
+      "Gini (%)": 34.3438780071
+    },
+    {
+      "Model": "LightGBM",
+      "Accuracy": 0.9211884503,
+      "Precision (bad)": 0.0875,
+      "Recall (bad)": 0.0930232558,
+      "F1 (bad)": 0.0901771337,
+      "ROC-AUC": 0.6501595342,
+      "Gini (%)": 30.0319068452
+    },
+    {
+      "Model": "XGBoost",
+      "Accuracy": 0.7921606919,
+      "Precision (bad)": 0.0786676116,
+      "Recall (bad)": 0.3687707641,
+      "F1 (bad)": 0.1296728972,
+      "ROC-AUC": 0.6471686303,
+      "Gini (%)": 29.4337260578
+    },
+    {
+      "Model": "Decision Tree",
+      "Accuracy": 0.5359185382,
+      "Precision (bad)": 0.0539504717,
+      "Recall (bad)": 0.6079734219,
+      "F1 (bad)": 0.0991064175,
+      "ROC-AUC": 0.5747549423,
+      "Gini (%)": 14.9509884543
+    }
+  ],
+  "decile_table": [
+    {
+      "decile": 1,
+      "number_of_customers": 717,
+      "number_of_bad_customers": 68,
+      "number_of_good_customers": 649,
+      "bad_customer_percentage": 9.4839609484,
+      "average_predicted_probability": 0.4323268709,
+      "lift": 2.2588211309,
+      "cumulative_bad_capture_%": 22.5913621262
+    },
+    {
+      "decile": 2,
+      "number_of_customers": 717,
+      "number_of_bad_customers": 48,
+      "number_of_good_customers": 669,
+      "bad_customer_percentage": 6.6945606695,
+      "average_predicted_probability": 0.3370766884,
+      "lift": 1.5944619747,
+      "cumulative_bad_capture_%": 38.5382059801
+    },
+    {
+      "decile": 3,
+      "number_of_customers": 717,
+      "number_of_bad_customers": 46,
+      "number_of_good_customers": 671,
+      "bad_customer_percentage": 6.4156206416,
+      "average_predicted_probability": 0.2865108759,
+      "lift": 1.5280260591,
+      "cumulative_bad_capture_%": 53.8205980066
+    },
+    {
+      "decile": 4,
+      "number_of_customers": 717,
+      "number_of_bad_customers": 35,
+      "number_of_good_customers": 682,
+      "bad_customer_percentage": 4.8814504881,
+      "average_predicted_probability": 0.2510486303,
+      "lift": 1.1626285232,
+      "cumulative_bad_capture_%": 65.4485049834
+    },
+    {
+      "decile": 5,
+      "number_of_customers": 717,
+      "number_of_bad_customers": 27,
+      "number_of_good_customers": 690,
+      "bad_customer_percentage": 3.7656903766,
+      "average_predicted_probability": 0.2209869067,
+      "lift": 0.8968848608,
+      "cumulative_bad_capture_%": 74.4186046512
+    },
+    {
+      "decile": 6,
+      "number_of_customers": 716,
+      "number_of_bad_customers": 25,
+      "number_of_good_customers": 691,
+      "bad_customer_percentage": 3.4916201117,
+      "average_predicted_probability": 0.1955975493,
+      "lift": 0.8316087901,
+      "cumulative_bad_capture_%": 82.7242524917
+    },
+    {
+      "decile": 7,
+      "number_of_customers": 717,
+      "number_of_bad_customers": 13,
+      "number_of_good_customers": 704,
+      "bad_customer_percentage": 1.8131101813,
+      "average_predicted_probability": 0.1723826259,
+      "lift": 0.4318334515,
+      "cumulative_bad_capture_%": 87.0431893688
+    },
+    {
+      "decile": 8,
+      "number_of_customers": 717,
+      "number_of_bad_customers": 12,
+      "number_of_good_customers": 705,
+      "bad_customer_percentage": 1.6736401674,
+      "average_predicted_probability": 0.1478442273,
+      "lift": 0.3986154937,
+      "cumulative_bad_capture_%": 91.0299003322
+    },
+    {
+      "decile": 9,
+      "number_of_customers": 717,
+      "number_of_bad_customers": 16,
+      "number_of_good_customers": 701,
+      "bad_customer_percentage": 2.2315202232,
+      "average_predicted_probability": 0.1209865291,
+      "lift": 0.5314873249,
+      "cumulative_bad_capture_%": 96.3455149502
+    },
+    {
+      "decile": 10,
+      "number_of_customers": 717,
+      "number_of_bad_customers": 11,
+      "number_of_good_customers": 706,
+      "bad_customer_percentage": 1.5341701534,
+      "average_predicted_probability": 0.0790382571,
+      "lift": 0.3653975359,
+      "cumulative_bad_capture_%": 100.0
+    }
+  ],
+  "top_features": [
+    {
+      "feature": "feature_7",
+      "mutual_info": 0.0021456214,
+      "gain_share_%": 5.9692291377,
+      "interpretation": "Lower typical value for bad-credit customers"
+    },
+    {
+      "feature": "feature_3",
+      "mutual_info": 0.005064477,
+      "gain_share_%": 5.3133159758,
+      "interpretation": "Lower typical value for bad-credit customers"
+    },
+    {
+      "feature": "mean_diff_open_enquiry_dt",
+      "mutual_info": 0.003332135,
+      "gain_share_%": 4.7273272682,
+      "interpretation": "Lower typical value for bad-credit customers"
+    },
+    {
+      "feature": "payment_history_mean_length",
+      "mutual_info": 0.0038601787,
+      "gain_share_%": 4.6906610466,
+      "interpretation": "Lower typical value for bad-credit customers"
+    },
+    {
+      "feature": "mean_diff_lastpaymt_opened_dt",
+      "mutual_info": 0.0010696804,
+      "gain_share_%": 4.5947680149,
+      "interpretation": "Lower typical value for bad-credit customers"
+    },
+    {
+      "feature": "total_credit_limit",
+      "mutual_info": 0.0011567347,
+      "gain_share_%": 4.5915303924,
+      "interpretation": "Lower typical value for bad-credit customers"
+    },
+    {
+      "feature": "Ratio_currbalance_creditlimit",
+      "mutual_info": 0.0013837484,
+      "gain_share_%": 4.2963463753,
+      "interpretation": "Higher typical value for bad-credit customers"
+    },
+    {
+      "feature": "mean_enquiry_amt",
+      "mutual_info": 0.0029470925,
+      "gain_share_%": 4.1397134831,
+      "interpretation": "Higher typical value for bad-credit customers"
+    },
+    {
+      "feature": "total_diff_lastpaymt_opened_dt",
+      "mutual_info": 4.6303e-06,
+      "gain_share_%": 4.0457122274,
+      "interpretation": "Lower typical value for bad-credit customers"
+    },
+    {
+      "feature": "total_high_credit",
+      "mutual_info": 0.003218376,
+      "gain_share_%": 3.6729881328,
+      "interpretation": "Lower typical value for bad-credit customers"
+    },
+    {
+      "feature": "total_enquiry_amt",
+      "mutual_info": 0.0018285868,
+      "gain_share_%": 3.574128236,
+      "interpretation": "Higher typical value for bad-credit customers"
+    },
+    {
+      "feature": "mean_interest_rate",
+      "mutual_info": 0.0034389451,
+      "gain_share_%": 3.5634237884,
+      "interpretation": "Lower typical value for bad-credit customers"
+    },
+    {
+      "feature": "total_cur_balance",
+      "mutual_info": 0.0,
+      "gain_share_%": 3.3974651145,
+      "interpretation": "Higher typical value for bad-credit customers"
+    },
+    {
+      "feature": "feature_44",
+      "mutual_info": 0.0,
+      "gain_share_%": 3.3584489198,
+      "interpretation": "Same typical value"
+    },
+    {
+      "feature": "count_enquiry_recency_365",
+      "mutual_info": 0.0058752376,
+      "gain_share_%": 3.2290351189,
+      "interpretation": "Higher typical value for bad-credit customers"
+    },
+    {
+      "feature": "feature_29",
+      "mutual_info": 0.0006831746,
+      "gain_share_%": 3.0976111215,
+      "interpretation": "Lower typical value for bad-credit customers"
+    },
+    {
+      "feature": "max_freq_enquiry",
+      "mutual_info": 0.0,
+      "gain_share_%": 3.0240932407,
+      "interpretation": "Lower typical value for bad-credit customers"
+    },
+    {
+      "feature": "feature_30",
+      "mutual_info": 0.0018675544,
+      "gain_share_%": 2.9916101159,
+      "interpretation": "Higher typical value for bad-credit customers"
+    },
+    {
+      "feature": "feature_66",
+      "mutual_info": 0.0,
+      "gain_share_%": 2.9863443533,
+      "interpretation": "Lower typical value for bad-credit customers"
+    },
+    {
+      "feature": "feature_35",
+      "mutual_info": 0.0010346615,
+      "gain_share_%": 2.7044131215,
+      "interpretation": "Same typical value"
+    }
+  ]
+}

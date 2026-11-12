@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bank GoodCredit – Credit Risk Prediction (PR-0015)</title>
+<style>
+  :root {
+    --blue-900: #0f2a52;
+    --blue-700: #1e4e8c;
+    --blue-500: #2f74c0;
+    --blue-100: #e8f1fb;
+    --yellow-500: #ffc21a;
+    --yellow-600: #e0a800;
+    --yellow-100: #fff6d6;
+    --white: #ffffff;
+    --text: #1d2a3a;
+    --muted: #5b6b80;
+    --border: #e1e8f2;
+    --good: #1e8449;
+    --bad: #c0392b;
+    --shadow: 0 6px 20px rgba(15, 42, 82, 0.08);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+    color: var(--text);
+    background: var(--white);
+    line-height: 1.6;
+  }
+
+  /* ---------- HERO ---------- */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--blue-900) 0%, var(--blue-700) 60%, var(--blue-500) 100%);
+    color: var(--white);
+    padding: 64px 24px 110px;
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; border-radius: 50%; pointer-events: none;
+  }
+  .hero::before { width: 420px; height: 420px; right: -120px; top: -160px; background: rgba(255, 194, 26, 0.18); }
+  .hero::after { width: 280px; height: 280px; left: -90px; bottom: -120px; background: rgba(255, 255, 255, 0.07); }
+  .hero-inner { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; }
+  .eyebrow {
+    display: inline-block; background: var(--yellow-500); color: var(--blue-900);
+    font-weight: 700; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 6px 12px; border-radius: 20px; margin-bottom: 16px;
+  }
+  .hero h1 { margin: 0 0 12px; font-size: clamp(1.9rem, 4vw, 2.8rem); line-height: 1.2; }
+  .hero h1 span { color: var(--yellow-500); }
+  .hero p.lead { margin: 0; max-width: 680px; font-size: 1.08rem; opacity: 0.92; }
+  .hero .meta { margin-top: 18px; font-size: 0.92rem; opacity: 0.85; }
+
+  /* ---------- STATUS BAR ---------- */
+  .status-wrap { max-width: 1100px; margin: -48px auto 0; padding: 0 24px; position: relative; z-index: 2; }
+  .status {
+    background: var(--white); border-radius: 14px; box-shadow: var(--shadow);
+    border: 1px solid var(--border); border-left: 6px solid var(--yellow-500);
+    padding: 18px 22px; display: flex; gap: 14px; align-items: flex-start;
+  }
+  .status .icon { font-size: 1.5rem; line-height: 1; }
+  .status h4 { margin: 0 0 4px; color: var(--blue-900); }
+  .status p { margin: 0; color: var(--muted); font-size: 0.93rem; }
+  .status.ok { border-left-color: var(--good); }
+  .status code, .note code { background: var(--blue-100); color: var(--blue-700); padding: 1px 6px; border-radius: 4px; }
+
+  /* ---------- NAV ---------- */
+  nav.topnav {
+    position: sticky; top: 0; z-index: 20; margin-top: 24px;
+    background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--border); box-shadow: 0 2px 10px rgba(15,42,82,0.04);
+  }
+  nav.topnav .wrap { max-width: 1100px; margin: 0 auto; overflow-x: auto; white-space: nowrap; padding: 0 14px; scrollbar-width: thin; }
+  nav.topnav a {
+    display: inline-block; padding: 14px 12px; color: var(--blue-700); text-decoration: none;
+    font-size: 0.88rem; font-weight: 600; border-bottom: 3px solid transparent;
+  }
+  nav.topnav a:hover { color: var(--blue-900); }
+  nav.topnav a.active { color: var(--blue-900); border-bottom-color: var(--yellow-500); background: var(--yellow-100); }
+
+  /* ---------- LAYOUT ---------- */
+  main { max-width: 1100px; margin: 0 auto; padding: 32px 24px 16px; }
+  .pipeline {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 8px 0 36px;
+  }
+  .step-chip {
+    background: var(--blue-100); border: 1px solid #cfe0f5; border-radius: 12px;
+    padding: 12px 14px; text-decoration: none; color: var(--blue-900); font-weight: 600; font-size: 0.9rem;
+    transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+  }
+  .step-chip:hover { transform: translateY(-2px); box-shadow: var(--shadow); background: var(--yellow-100); }
+  .step-chip b { display: inline-flex; width: 26px; height: 26px; align-items: center; justify-content: center;
+    background: var(--blue-700); color: var(--white); border-radius: 50%; margin-right: 8px; font-size: 0.8rem; }
+  .step-chip:hover b { background: var(--yellow-500); color: var(--blue-900); }
+
+  section.card {
+    background: var(--white); border: 1px solid var(--border); border-radius: 18px;
+    padding: 30px 32px; margin-bottom: 26px; box-shadow: var(--shadow);
+    scroll-margin-top: 70px; position: relative; overflow: hidden;
+  }
+  section.card::before {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px;
+    background: linear-gradient(180deg, var(--yellow-500), var(--blue-500));
+  }
+  .sec-head { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  .badge {
+    flex-shrink: 0; width: 46px; height: 46px; border-radius: 14px;
+    background: linear-gradient(135deg, var(--blue-700), var(--blue-500)); color: var(--white);
+    display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem;
+    box-shadow: 0 4px 12px rgba(30, 78, 140, 0.3);
+  }
+  .sec-head h2 { margin: 0; color: var(--blue-900); font-size: 1.5rem; }
+  .sec-head .sub { color: var(--muted); font-size: 0.93rem; margin-top: 2px; }
+  h3 { color: var(--blue-700); font-size: 1.08rem; margin: 22px 0 8px; }
+  p { margin: 8px 0; }
+  ul.check { list-style: none; padding: 0; margin: 8px 0; }
+  ul.check li { padding: 6px 0 6px 28px; position: relative; }
+  ul.check li::before {
+    content: "✓"; position: absolute; left: 0; top: 6px; width: 20px; height: 20px; border-radius: 50%;
+    background: var(--yellow-500); color: var(--blue-900); font-weight: 800; font-size: 0.8rem;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .concept {
+    background: var(--yellow-100); border: 1px solid #f6e09a; border-radius: 12px;
+    padding: 14px 18px; margin: 14px 0;
+  }
+  .concept strong { color: #7a5a00; }
+  .note {
+    background: var(--blue-100); border: 1px solid #cfe0f5; border-radius: 12px;
+    padding: 14px 18px; margin: 14px 0; color: var(--blue-900);
+  }
+  .warn { background: #fff3f0; border-color: #f5c6bb; color: #7b241c; }
+
+  table { width: 100%; border-collapse: separate; border-spacing: 0; margin: 12px 0; font-size: 0.92rem; }
+  th, td { padding: 10px 12px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+  thead th {
+    background: var(--blue-700); color: var(--white); font-weight: 600; position: sticky; top: 0;
+  }
+  thead th:first-child { border-top-left-radius: 10px; }
+  thead th:last-child { border-top-right-radius: 10px; }
+  tbody tr:nth-child(even) td { background: #fbfdff; }
+  tbody tr:hover td { background: var(--yellow-100); }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .table-wrap { overflow-x: auto; border-radius: 10px; }
+  .pill-ok { color: var(--good); font-weight: 700; }
+  .pill-skip { color: #9a6700; font-weight: 700; }
+  .tag { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 600; margin: 3px; }
+  .tag-blue { background: var(--blue-100); color: var(--blue-700); }
+  .tag-yellow { background: var(--yellow-500); color: var(--blue-900); }
+  .tag-grey { background: #eef1f5; color: var(--muted); }
+  code.f { background: var(--blue-100); color: var(--blue-700); padding: 2px 6px; border-radius: 5px; font-size: 0.88em; }
+
+  /* ---------- CARDS ---------- */
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 16px; margin: 16px 0; }
+  .kpi {
+    border-radius: 16px; padding: 20px; color: var(--white);
+    background: linear-gradient(135deg, var(--blue-700), var(--blue-500)); box-shadow: var(--shadow);
+  }
+  .kpi.yellow { background: linear-gradient(135deg, var(--yellow-500), #ffd95c); color: var(--blue-900); }
+  .kpi .v { font-size: 2rem; font-weight: 800; line-height: 1.1; }
+  .kpi .l { font-size: 0.85rem; opacity: 0.9; margin-top: 4px; }
+  .placeholder { color: var(--muted); font-style: italic; }
+
+  /* ---------- GINI GAUGE ---------- */
+  .gauge-box { border: 1px solid var(--border); border-radius: 14px; padding: 20px; background: #fcfdff; margin: 14px 0; }
+  .gauge { position: relative; height: 22px; border-radius: 999px; background: var(--blue-100); overflow: visible; margin: 34px 0 10px; }
+  .gauge-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--blue-500), var(--blue-700)); }
+  .marker { position: absolute; top: -30px; transform: translateX(-50%); text-align: center; font-size: 0.8rem; font-weight: 700; color: var(--blue-900); }
+  .marker::after { content: ""; display: block; width: 3px; height: 40px; margin: 3px auto 0; background: var(--yellow-600); border-radius: 2px; }
+  .marker.result::after { background: var(--blue-700); }
+  .scale { display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--muted); }
+
+  /* ---------- BARS ---------- */
+  .bar-row { display: grid; grid-template-columns: 170px 1fr 90px; gap: 12px; align-items: center; margin: 9px 0; font-size: 0.9rem; }
+  .bar-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
+  .bar-track { background: var(--blue-100); border-radius: 999px; height: 16px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--blue-500), var(--blue-700)); transition: width 0.6s ease; }
+  .bar-fill.hot { background: linear-gradient(90deg, #ffd95c, var(--yellow-600)); }
+  .bar-val { text-align: right; font-weight: 700; color: var(--blue-900); font-variant-numeric: tabular-nums; }
+
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+  @media (max-width: 760px) { .split { grid-template-columns: 1fr; } .bar-row { grid-template-columns: 120px 1fr 70px; } }
+
+  details { border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; margin: 12px 0; background: #fcfdff; }
+  details summary { cursor: pointer; font-weight: 700; color: var(--blue-700); }
+  details[open] summary { color: var(--yellow-600); }
+
+  .stepper { counter-reset: st; margin: 10px 0; }
+  .stepper div { position: relative; padding: 4px 0 14px 46px; }
+  .stepper div::before {
+    counter-increment: st; content: counter(st); position: absolute; left: 0; top: 0;
+    width: 30px; height: 30px; border-radius: 50%; background: var(--yellow-500); color: var(--blue-900);
+    font-weight: 800; display: flex; align-items: center; justify-content: center;
+  }
+  .stepper div::after {
+    content: ""; position: absolute; left: 14px; top: 32px; bottom: 0; width: 2px; background: var(--blue-100);
+  }
+  .stepper div:last-child::after { display: none; }
+
+  footer {
+    background: var(--blue-900); color: #cfe0f5; text-align: center; padding: 28px 20px; font-size: 0.9rem; margin-top: 30px;
+  }
+  footer strong { color: var(--yellow-500); }
+  .to-top {
+    position: fixed; right: 20px; bottom: 20px; width: 48px; height: 48px; border-radius: 50%;
+    background: var(--yellow-500); color: var(--blue-900); font-size: 1.3rem; font-weight: 800;
+    text-decoration: none; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.18); opacity: 0; pointer-events: none; transition: opacity 0.2s;
+  }
+  .to-top.show { opacity: 1; pointer-events: auto; }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-inner">
+    <span class="eyebrow">DataMites · PR-0015 / PRCL-0015</span>
+    <h1>Bank GoodCredit <span>Credit Risk</span> Prediction</h1>
+    <p class="lead">Predicting which credit card customers are likely to fall 30 or more days past due, so the bank can act early and reduce losses.</p>
+    <div class="meta">Machine learning classification project · Entry-level Data Science portfolio</div>
+  </div>
+</header>
+
+<div class="status-wrap">
+  <div class="status" id="status-box">
+    <div class="icon">⏳</div>
+    <div>
+      <h4 id="status-title">Waiting for results</h4>
+      <p id="status-text">Preparing results…</p>
+    </div>
+  </div>
+</div>
+
+<nav class="topnav">
+  <div class="wrap">
+    <a href="#intro">Introduction</a>
+    <a href="#libraries">Libraries</a>
+    <a href="#data">Data</a>
+    <a href="#cleaning">Cleaning</a>
+    <a href="#eda">EDA</a>
+    <a href="#integration">Integration</a>
+    <a href="#features">Features</a>
+    <a href="#selection">Selection</a>
+    <a href="#prep">Preparation</a>
+    <a href="#models">Models</a>
+    <a href="#tuning">Tuning</a>
+    <a href="#evaluation">Evaluation</a>
+    <a href="#deciles">Deciles</a>
+    <a href="#interpretation">Interpretation</a>
+    <a href="#conclusion">Conclusion</a>
+  </div>
+</nav>
+
+<main>
+
+  <!-- Pipeline overview -->
+  <div class="pipeline" aria-label="Project pipeline">
+    <a class="step-chip" href="#data"><b>1</b>Data loading</a>
+    <a class="step-chip" href="#cleaning"><b>2</b>Cleaning</a>
+    <a class="step-chip" href="#eda"><b>3</b>EDA</a>
+    <a class="step-chip" href="#features"><b>4</b>Features</a>
+    <a class="step-chip" href="#models"><b>5</b>Models</a>
+    <a class="step-chip" href="#evaluation"><b>6</b>Evaluation</a>
+    <a class="step-chip" href="#deciles"><b>7</b>Deciles</a>
+  </div>
+
+  <!-- 1 -->
+  <section class="card" id="intro">
+    <div class="sec-head"><div class="badge">1</div><div><h2>Project Introduction</h2><div class="sub">What we are solving and why it matters</div></div></div>
+    <div class="split">
+      <div>
+        <h3>What is credit risk?</h3>
+        <p>Credit risk is the possibility that a borrower will fail to repay a loan or credit card bill on time. Every missed payment is a potential loss for the bank.</p>
+        <h3>Why predict it?</h3>
+        <ul class="check">
+          <li>Reduce losses by acting early (payment plans, limit changes)</li>
+          <li>Approve new lending more carefully</li>
+          <li>Offer better rates to low-risk customers</li>
+          <li>Meet regulatory risk-management requirements</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Target variable: <code class="f">Bad_label</code></h3>
+        <table>
+          <thead><tr><th>Value</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td><span class="tag tag-blue">0</span></td><td>Good credit – pays on time</td></tr>
+            <tr><td><span class="tag tag-yellow">1</span></td><td>Bad credit – 30+ days past due (30 DPD+)</td></tr>
+          </tbody>
+        </table>
+        <div class="concept"><strong>Gini coefficient:</strong> measures how well the model separates good from bad customers.<br><code class="f">Gini = (2 × ROC-AUC − 1) × 100</code><br>0 = random guessing, 100 = perfect. Business-case benchmark: <strong>37.9</strong>.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section class="card" id="libraries">
+    <div class="sec-head"><div class="badge">2</div><div><h2>Import Libraries</h2><div class="sub">The tools used throughout the project</div></div></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Library</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code class="f">pandas</code></td><td>Data tables and manipulation</td></tr>
+          <tr><td><code class="f">numpy</code></td><td>Numerical calculations</td></tr>
+          <tr><td><code class="f">matplotlib</code> / <code class="f">seaborn</code></td><td>Charts and visualisation</td></tr>
+          <tr><td><code class="f">scikit-learn</code></td><td>Preprocessing, models, tuning, metrics</td></tr>
+          <tr><td><code class="f">xgboost</code> / <code class="f">lightgbm</code></td><td>Gradient-boosting models</td></tr>
+          <tr><td><code class="f">shap</code> (optional)</td><td>Explains individual predictions</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="card" id="data">
+    <div class="sec-head"><div class="badge">3</div><div><h2>Data Loading</h2><div class="sub">Three linked datasets, one key: <code class="f">customer_no</code></div></div></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Dataset</th><th>What it contains</th><th>Granularity</th></tr></thead>
+        <tbody>
+          <tr><td><code class="f">Cust_Account</code></td><td>Account and payment history</td><td><span class="tag tag-blue">Many rows per customer</span></td></tr>
+          <tr><td><code class="f">Cust_Enquiry</code></td><td>Credit enquiry history</td><td><span class="tag tag-blue">Many rows per customer</span></td></tr>
+          <tr><td><code class="f">Cust_Demographics</code></td><td>Anonymised features and <code class="f">Bad_label</code></td><td><span class="tag tag-yellow">One row per customer</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section class="card" id="cleaning">
+    <div class="sec-head"><div class="badge">4</div><div><h2>Data Cleaning</h2><div class="sub">Fix the data before trusting any result</div></div></div>
+    <ul class="check">
+      <li><strong>Dates</strong> converted from text to real dates (day first)</li>
+      <li><strong>Payment-history strings</strong> cleaned of extra quote characters</li>
+      <li><strong>Numeric columns</strong> converted; non-numbers treated as missing</li>
+      <li><strong>Duplicates</strong> checked; one row per customer enforced in demographics</li>
+      <li><strong>High-missingness features</strong> (over 95% empty) flagged for removal</li>
+    </ul>
+    <div class="note"><strong>Why not fill or delete everything?</strong> A missing <code class="f">closed_dt</code> means the account is still open, and a missing <code class="f">amt_past_due</code> usually means nothing is overdue. Missing values are interpreted, not blindly filled.</div>
+  </section>
+
+  <!-- 5 -->
+  <section class="card" id="eda">
+    <div class="sec-head"><div class="badge">5</div><div><h2>Exploratory Data Analysis</h2><div class="sub">Patterns, imbalance, and early signals</div></div></div>
+    <div class="split">
+      <ul class="check">
+        <li><strong>Class imbalance:</strong> bad customers are a small minority, so accuracy alone would mislead</li>
+        <li><strong>Account types and enquiry purposes:</strong> a few categories dominate</li>
+        <li><strong>Feature distributions:</strong> several features differ between good and bad customers</li>
+      </ul>
+      <ul class="check">
+        <li><strong>Correlation:</strong> no single feature is strongly correlated with the target, which is typical in credit risk</li>
+        <li><strong>Missing values:</strong> visualised per dataset to guide cleaning</li>
+      </ul>
+    </div>
+    <p class="placeholder">Charts are shown inside the notebook (Section 5).</p>
+  </section>
+
+  <!-- 6 -->
+  <section class="card" id="integration">
+    <div class="sec-head"><div class="badge">6</div><div><h2>Data Integration</h2><div class="sub">One row per customer, no duplicated labels</div></div></div>
+    <div class="stepper">
+      <div><strong>Summarise accounts</strong> to one row per customer (counts, totals, averages).</div>
+      <div><strong>Summarise enquiries</strong> to one row per customer in the same way.</div>
+      <div><strong>Left-join</strong> both summaries onto demographics, then check the count with an <code class="f">assert</code>.</div>
+      <div><strong>Respect the timeline:</strong> use only records on or before a reference date, to prevent target leakage.</div>
+    </div>
+    <div class="note" id="integration-info">Reference date and customer count: <span class="placeholder">waiting for results…</span></div>
+  </section>
+
+  <!-- 7 -->
+  <section class="card" id="features">
+    <div class="sec-head"><div class="badge">7</div><div><h2>Feature Engineering</h2><div class="sub">Built where the data supports them, skipped where it does not</div></div></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Business-case feature</th><th>What it measures</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td><code class="f">total_diff_lastpaymt_opened_dt</code></td><td>Total days from account opening to last payment</td><td class="pill-ok">Built</td></tr>
+          <tr><td><code class="f">mean_diff_lastpaymt_opened_dt</code></td><td>Average of the same gap</td><td class="pill-ok">Built</td></tr>
+          <tr><td><code class="f">payment_history_avg_dpd_0_29_bucket</code></td><td>Average days-past-due for payments 0–29 days late</td><td class="pill-ok">Built</td></tr>
+          <tr><td><code class="f">payment_history_mean_length</code></td><td>Average months of payment history per account</td><td class="pill-ok">Built</td></tr>
+          <tr><td><code class="f">count_enquiry_recency_90</code></td><td>Enquiries in the 90 days before the reference date</td><td class="pill-ok">Built</td></tr>
+          <tr><td><code class="f">count_enquiry_recency_365</code></td><td>Enquiries in the 365 days before the reference date</td><td class="pill-ok">Built</td></tr>
+          <tr><td><code class="f">mean_diff_open_enquiry_dt</code></td><td>Average age of enquiries <em>(interpretation to verify)</em></td><td class="pill-ok">Built</td></tr>
+          <tr><td><code class="f">max_freq_enquiry</code></td><td>Most enquiries for one purpose <em>(interpretation to verify)</em></td><td class="pill-ok">Built</td></tr>
+          <tr><td><code class="f">Ratio_currbalance_creditlimit</code></td><td>Current balance divided by credit limit</td><td class="pill-ok">Built</td></tr>
+          <tr><td><code class="f">min_months_last_30_plus</code></td><td>Months since last 30+ days-past-due event</td><td class="pill-skip">Skipped: month order not confirmed</td></tr>
+          <tr><td><code class="f">utilisation_trend</code></td><td>Change in credit use over time</td><td class="pill-skip">Skipped: only one balance per account</td></tr>
+          <tr><td><code class="f">perc_unsecured_others</code></td><td>Share of unsecured accounts</td><td class="pill-skip">Skipped: no account-type mapping</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>Engineered features in the final table</h3>
+    <div id="feature-tags" class="placeholder">waiting for results…</div>
+  </section>
+
+  <!-- 8 -->
+  <section class="card" id="selection">
+    <div class="sec-head"><div class="badge">8</div><div><h2>Feature Selection</h2><div class="sub">Chosen on training data only, so the test set stays untouched</div></div></div>
+    <p>Two methods rank the features: <strong>mutual information</strong> (how much a feature reveals about the target) and <strong>LightGBM gain</strong> (how much the model relied on it).</p>
+    <h3>Top 20 features</h3>
+    <div id="top-features" class="placeholder">waiting for results…</div>
+  </section>
+
+  <!-- 9 -->
+  <section class="card" id="prep">
+    <div class="sec-head"><div class="badge">9</div><div><h2>Prepare Data for Machine Learning</h2><div class="sub">Split, impute, scale, and protect against leakage</div></div></div>
+    <ul class="check">
+      <li><strong>Stratified split:</strong> 70% training, 30% test, same bad-customer share in both</li>
+      <li><strong>Median imputation:</strong> missing values filled with the training median</li>
+      <li><strong>Scaling:</strong> applied for Logistic Regression only</li>
+      <li><strong>Leakage control:</strong> preprocessing lives inside a Pipeline, learned from training folds only</li>
+    </ul>
+    <p>Features kept for modelling: <span id="selected-count" class="tag tag-yellow">waiting…</span></p>
+  </section>
+
+  <!-- 10 -->
+  <section class="card" id="models">
+    <div class="sec-head"><div class="badge">10</div><div><h2>Model Building</h2><div class="sub">From a simple baseline to gradient boosting</div></div></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Model</th><th>How it works</th><th>Advantage</th><th>Limitation</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Logistic Regression</strong> (baseline)</td><td>Weighted sum converted to a probability</td><td>Simple, explainable</td><td>Only straight-line patterns</td></tr>
+          <tr><td><strong>Decision Tree</strong></td><td>Series of yes/no questions</td><td>Easy to visualise</td><td>Tends to overfit</td></tr>
+          <tr><td><strong>Random Forest</strong></td><td>Many trees averaged together</td><td>Stable, handles curves</td><td>Slower, harder to explain</td></tr>
+          <tr><td><strong>XGBoost</strong></td><td>Trees built in sequence, fixing errors</td><td>Often very accurate</td><td>Many settings to tune</td></tr>
+          <tr><td><strong>LightGBM</strong></td><td>Fast gradient boosting</td><td>Fast, strong accuracy</td><td>Can overfit if untuned</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>Cross-validation on training data (5 folds, ROC-AUC)</h3>
+    <div id="cv-table" class="table-wrap"><p class="placeholder">waiting for results…</p></div>
+  </section>
+
+  <!-- 11 -->
+  <section class="card" id="tuning">
+    <div class="sec-head"><div class="badge">11</div><div><h2>Hyperparameter Tuning</h2><div class="sub">Searching for better settings with cross-validation</div></div></div>
+    <div class="split">
+      <div>
+        <h3>Method</h3>
+        <p><code class="f">RandomizedSearchCV</code>: 20 random combinations, 3-fold cross-validation, scored by ROC-AUC, applied to LightGBM.</p>
+      </div>
+      <div>
+        <h3>Parameters tuned</h3>
+        <p>Number of trees, learning rate, tree complexity, minimum samples per split, row and column sampling, and regularisation.</p>
+      </div>
+    </div>
+    <div class="note" id="tuning-info">Final model: <span class="placeholder">waiting for results…</span></div>
+  </section>
+
+  <!-- 12 -->
+  <section class="card" id="evaluation">
+    <div class="sec-head"><div class="badge">12</div><div><h2>Model Evaluation</h2><div class="sub">Held-out test set, with recall for bad customers in focus</div></div></div>
+    <p>Accuracy alone can mislead when bad customers are rare, so we also look at how many risky customers the model catches (recall) and how well it ranks them (ROC-AUC).</p>
+    <div class="kpis" id="kpis"><div class="placeholder">waiting for results…</div></div>
+
+    <h3>Gini versus benchmark</h3>
+    <div class="gauge-box" id="gauge-box"><p class="placeholder">waiting for results…</p></div>
+
+    <h3>Test-set comparison</h3>
+    <div id="test-table" class="table-wrap"><p class="placeholder">waiting for results…</p></div>
+  </section>
+
+  <!-- 13 -->
+  <section class="card" id="deciles">
+    <div class="sec-head"><div class="badge">13</div><div><h2>Rank Ordering and Decile Analysis</h2><div class="sub">Decile 1 = highest predicted risk</div></div></div>
+    <p>Test customers are sorted by predicted risk and split into 10 equal groups. A good model shows the bad-customer share falling steadily from decile 1 to decile 10.</p>
+    <div id="decile-chart" class="placeholder">waiting for results…</div>
+    <h3>Decile table</h3>
+    <div id="decile-table" class="table-wrap"><p class="placeholder">waiting for results…</p></div>
+    <div class="note">The business-case rank-ordering benchmark was not provided, so no decile benchmark comparison is shown.</div>
+  </section>
+
+  <!-- 14 -->
+  <section class="card" id="interpretation">
+    <div class="sec-head"><div class="badge">14</div><div><h2>Final Model Interpretation</h2><div class="sub">What the model relies on, and what it cannot tell us</div></div></div>
+    <div class="concept"><strong>Important:</strong> feature importance shows which inputs the model <em>used</em>. It does <strong>not</strong> prove that a feature causes default.</div>
+    <h3>Known limitations</h3>
+    <ul class="check">
+      <li>Most demographic features are anonymised</li>
+      <li>Three business-case features could not be built from the data</li>
+      <li>The data is a single snapshot in time</li>
+      <li>The benchmark may come from a different population</li>
+    </ul>
+  </section>
+
+  <!-- 15 -->
+  <section class="card" id="conclusion">
+    <div class="sec-head"><div class="badge">15</div><div><h2>Final Business Conclusion</h2><div class="sub">Summary for a non-technical audience</div></div></div>
+    <p><strong>Business problem:</strong> rank credit card customers by how likely they are to fall 30+ days behind, so the bank can act early.</p>
+    <h3>Recommendations</h3>
+    <div class="stepper">
+      <div>Prioritise early support and monitoring for the highest-risk deciles.</div>
+      <div>Use the model as one input to credit decisions, with human review.</div>
+      <div>Agree the probability cut-off with the business, based on the real cost of missed risky customers versus wrongly flagged good ones.</div>
+      <div>Confirm feature definitions and the benchmark population before presenting the Gini comparison as final.</div>
+    </div>
+    <h3>Future improvements</h3>
+    <div>
+      <span class="tag tag-blue">Time-based validation</span>
+      <span class="tag tag-blue">Build skipped features when data allows</span>
+      <span class="tag tag-blue">Probability calibration</span>
+      <span class="tag tag-blue">Per-customer SHAP explanations</span>
+      <span class="tag tag-blue">Ongoing monitoring and retraining</span>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <strong>Bank GoodCredit · Credit Risk Prediction (PR-0015)</strong><br>
+  Built from the project notebook · Results embedded from the notebook run
+</footer>
+
+<a href="#top" class="to-top" id="toTop" aria-label="Back to top">↑</a>
+
+<script>
+const fmt = (v, d = 2) => (v === null || v === undefined || Number.isNaN(v)) ? '–' : Number(v).toFixed(d);
+const fmtInt = v => (v === null || v === undefined) ? '–' : Number(v).toLocaleString();
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function setStatus(title, text, ok) {
+  document.getElementById('status-title').textContent = title;
+  document.getElementById('status-text').innerHTML = text;
+  const box = document.getElementById('status-box');
+  box.classList.toggle('ok', !!ok);
+  box.querySelector('.icon').textContent = ok ? '✅' : '⏳';
+}
+
+function table(headers, rows, numericCols = []) {
+  const head = headers.map((h, i) => `<th class="${numericCols.includes(i) ? 'num' : ''}">${h}</th>`).join('');
+  const body = rows.map(r => `<tr>${r.map((c, i) => `<td class="${numericCols.includes(i) ? 'num' : ''}">${c}</td>`).join('')}</tr>`).join('');
+  return `<table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;
+}
+
+function bars(items, maxVal, hotIndex = -1) {
+  return items.map((it, i) => `
+    <div class="bar-row">
+      <div class="bar-label" title="${esc(it.label)}">${esc(it.label)}</div>
+      <div class="bar-track"><div class="bar-fill ${i === hotIndex ? 'hot' : ''}" style="width:${Math.max(0, Math.min(100, (it.value / maxVal) * 100))}%"></div></div>
+      <div class="bar-val">${fmt(it.value, 2)}${it.unit || '%'}</div>
+    </div>`).join('');
+}
+
+function render(r) {
+  setStatus('Results loaded',
+    `Embedded from the notebook run · Reference date <strong>${esc(r.reference_date)}</strong> · ${fmtInt(r.customers)} customers · Final model: <strong>${esc(r.final_model)}</strong>`,
+    true);
+
+  document.getElementById('integration-info').innerHTML =
+    `Reference date <strong>${esc(r.reference_date)}</strong>; <strong>${fmtInt(r.customers)}</strong> customers in the modelling table.`;
+
+  document.getElementById('feature-tags').innerHTML =
+    r.engineered_features.map(f => `<span class="tag tag-blue">${esc(f)}</span>`).join('');
+
+  document.getElementById('top-features').innerHTML = table(
+    ['#', 'Feature', 'Mutual info', 'Gain share', 'Direction'],
+    r.top_features.map((f, i) => [i + 1, `<code class="f">${esc(f.feature)}</code>`, fmt(f.mutual_info, 4),
+      fmt(f['gain_share_%'], 2) + '%', esc(f.interpretation)]),
+    [0, 2, 3]);
+
+  document.getElementById('selected-count').textContent = `${r.selected_features_count} features`;
+
+  document.getElementById('cv-table').innerHTML = table(
+    ['Model', 'CV ROC-AUC (mean)', 'CV ROC-AUC (std)'],
+    r.cv_table.map(m => [esc(m.Model), fmt(m['CV ROC-AUC (mean)'], 4), fmt(m['CV ROC-AUC (std)'], 4)]),
+    [1, 2]);
+
+  document.getElementById('tuning-info').innerHTML =
+    `Final model selected on training cross-validation: <strong>${esc(r.final_model)}</strong>.`;
+
+  const fm = r.test_results.find(m => m.Model === r.final_model) || r.test_results[0];
+  document.getElementById('kpis').innerHTML = `
+    <div class="kpi"><div class="v">${fmt(fm['Gini (%)'], 2)}</div><div class="l">Test Gini (%)</div></div>
+    <div class="kpi yellow"><div class="v">${fmt(fm['ROC-AUC'], 3)}</div><div class="l">Test ROC-AUC</div></div>
+    <div class="kpi"><div class="v">${fmt(fm['Recall (bad)'], 3)}</div><div class="l">Recall: bad customers caught</div></div>
+    <div class="kpi yellow"><div class="v">${fmt(fm['Precision (bad)'], 3)}</div><div class="l">Precision for bad customers</div></div>`;
+
+  // Gini gauge against benchmark (scale 0 to 100)
+  const gMax = 100;
+  const diff = r.final_test_gini - r.benchmark_gini;
+  document.getElementById('gauge-box').innerHTML = `
+    <div class="gauge">
+      <div class="gauge-fill" style="width:${Math.max(0, Math.min(100, r.final_test_gini))}%"></div>
+      <div class="marker" style="left:${r.benchmark_gini}%">Benchmark<br>${fmt(r.benchmark_gini, 1)}</div>
+      <div class="marker result" style="left:${Math.max(0, Math.min(100, r.final_test_gini))}%">Model<br>${fmt(r.final_test_gini, 2)}</div>
+    </div>
+    <div class="scale"><span>0</span><span>25</span><span>50</span><span>75</span><span>${gMax}</span></div>
+    <p style="margin-top:16px">Difference from benchmark:
+      <strong style="color:${diff >= 0 ? 'var(--good)' : 'var(--bad)'}">${diff >= 0 ? '+' : ''}${fmt(diff, 2)} points</strong></p>
+    <p class="placeholder" style="font-style:normal">${diff >= 0
+      ? 'The final model meets or exceeds the benchmark on the test set.'
+      : 'The final model is below the benchmark on the test set.'}
+      The benchmark may come from a different population, so treat this comparison as indicative.</p>`;
+
+  document.getElementById('test-table').innerHTML = table(
+    ['Model', 'Accuracy', 'Precision (bad)', 'Recall (bad)', 'F1 (bad)', 'ROC-AUC', 'Gini (%)'],
+    r.test_results.map(m => {
+      const isFinal = m.Model === r.final_model;
+      const cells = [esc(m.Model) + (isFinal ? ' <span class="tag tag-yellow">selected</span>' : ''),
+        fmt(m.Accuracy, 4), fmt(m['Precision (bad)'], 4), fmt(m['Recall (bad)'], 4),
+        fmt(m['F1 (bad)'], 4), fmt(m['ROC-AUC'], 4), fmt(m['Gini (%)'], 2)];
+      return cells;
+    }),
+    [1, 2, 3, 4, 5, 6]);
+
+  const d = r.decile_table;
+  const maxPct = Math.max(...d.map(x => x.bad_customer_percentage));
+  document.getElementById('decile-chart').className = '';
+  document.getElementById('decile-chart').innerHTML = bars(
+    d.map(x => ({ label: `Decile ${x.decile}`, value: x.bad_customer_percentage })), maxPct, 0);
+
+  document.getElementById('decile-table').innerHTML = table(
+    ['Decile', 'Customers', 'Bad', 'Good', 'Bad %', 'Avg predicted prob.', 'Lift', 'Cumulative bad capture'],
+    d.map(x => [x.decile, fmtInt(x.number_of_customers), fmtInt(x.number_of_bad_customers),
+      fmtInt(x.number_of_good_customers), fmt(x.bad_customer_percentage, 2) + '%',
+      fmt(x.average_predicted_probability, 4), fmt(x.lift, 2) + '×', fmt(x['cumulative_bad_capture_%'], 1) + '%']),
+    [0, 1, 2, 3, 4, 5, 6, 7]);
+}
+
+// Results embedded directly from the notebook run (no external file needed)
+const RESULTS = {
+  "final_model": "Random Forest",
+  "final_test_gini": 34.3438780071089,
+  "benchmark_gini": 37.9,
+  "gini_difference": -3.5561219928911,
+  "reference_date": "2015-12-20",
+  "customers": 23896,
+  "test_bad_rate": 0.041986330032082575,
+  "engineered_features": [
+    "total_diff_lastpaymt_opened_dt",
+    "mean_diff_lastpaymt_opened_dt",
+    "payment_history_avg_dpd_0_29_bucket",
+    "payment_history_mean_length",
+    "Ratio_currbalance_creditlimit",
+    "count_enquiry_recency_90",
+    "count_enquiry_recency_365",
+    "mean_diff_open_enquiry_dt",
+    "max_freq_enquiry"
+  ],
+  "skipped_features": {
+    "min_months_last_30_plus": "Needs the month order inside the payment-history string, which is not confirmed.",
+    "utilisation_trend": "Needs several balance readings over time; the data has one balance per account.",
+    "perc_unsecured_others": "Needs a mapping from account-type codes to secured/unsecured, which is not provided."
+  },
+  "selected_features_count": 40,
+  "cv_table": [
+    {
+      "Model": "Random Forest",
+      "CV ROC-AUC (mean)": 0.6594211278,
+      "CV ROC-AUC (std)": 0.0226468049
+    },
+    {
+      "Model": "Logistic Regression",
+      "CV ROC-AUC (mean)": 0.6568637858,
+      "CV ROC-AUC (std)": 0.0146272035
+    },
+    {
+      "Model": "LightGBM",
+      "CV ROC-AUC (mean)": 0.6362030311,
+      "CV ROC-AUC (std)": 0.0098122114
+    },
+    {
+      "Model": "XGBoost",
+      "CV ROC-AUC (mean)": 0.6346183914,
+      "CV ROC-AUC (std)": 0.0108100058
+    },
+    {
+      "Model": "Decision Tree",
+      "CV ROC-AUC (mean)": 0.6010153699,
+      "CV ROC-AUC (std)": 0.0084605694
+    }
+  ],
+  "test_results": [
+    {
+      "Model": "Logistic Regression",
+      "Accuracy": 0.6151485563,
+      "Precision (bad)": 0.0684691011,
+      "Recall (bad)": 0.6478405316,
+      "F1 (bad)": 0.1238488409,
+      "ROC-AUC": 0.6812411356,
+      "Gini (%)": 36.2482271288
+    },
+    {
+      "Model": "LightGBM (tuned)",
+      "Accuracy": 0.7312037941,
+      "Precision (bad)": 0.0791925466,
+      "Recall (bad)": 0.5083056478,
+      "F1 (bad)": 0.1370353784,
+      "ROC-AUC": 0.6759999187,
+      "Gini (%)": 35.1999837467
+    },
+    {
+      "Model": "Random Forest",
+      "Accuracy": 0.9499232808,
+      "Precision (bad)": 0.1081081081,
+      "Recall (bad)": 0.0265780731,
+      "F1 (bad)": 0.0426666667,
+      "ROC-AUC": 0.67171939,
+      "Gini (%)": 34.3438780071
+    },
+    {
+      "Model": "LightGBM",
+      "Accuracy": 0.9211884503,
+      "Precision (bad)": 0.0875,
+      "Recall (bad)": 0.0930232558,
+      "F1 (bad)": 0.0901771337,
+      "ROC-AUC": 0.6501595342,
+      "Gini (%)": 30.0319068452
+    },
+    {
+      "Model": "XGBoost",
+      "Accuracy": 0.7921606919,
+      "Precision (bad)": 0.0786676116,
+      "Recall (bad)": 0.3687707641,
+      "F1 (bad)": 0.1296728972,
+      "ROC-AUC": 0.6471686303,
+      "Gini (%)": 29.4337260578
+    },
+    {
+      "Model": "Decision Tree",
+      "Accuracy": 0.5359185382,
+      "Precision (bad)": 0.0539504717,
+      "Recall (bad)": 0.6079734219,
+      "F1 (bad)": 0.0991064175,
+      "ROC-AUC": 0.5747549423,
+      "Gini (%)": 14.9509884543
+    }
+  ],
+  "decile_table": [
+    {
+      "decile": 1,
+      "number_of_customers": 717,
+      "number_of_bad_customers": 68,
+      "number_of_good_customers": 649,
+      "bad_customer_percentage": 9.4839609484,
+      "average_predicted_probability": 0.4323268709,
+      "lift": 2.2588211309,
+      "cumulative_bad_capture_%": 22.5913621262
+    },
+    {
+      "decile": 2,
+      "number_of_customers": 717,
+      "number_of_bad_customers": 48,
+      "number_of_good_customers": 669,
+      "bad_customer_percentage": 6.6945606695,
+      "average_predicted_probability": 0.3370766884,
+      "lift": 1.5944619747,
+      "cumulative_bad_capture_%": 38.5382059801
+    },
+    {
+      "decile": 3,
+      "number_of_customers": 717,
+      "number_of_bad_customers": 46,
+      "number_of_good_customers": 671,
+      "bad_customer_percentage": 6.4156206416,
+      "average_predicted_probability": 0.2865108759,
+      "lift": 1.5280260591,
+      "cumulative_bad_capture_%": 53.8205980066
+    },
+    {
+      "decile": 4,
+      "number_of_customers": 717,
+      "number_of_bad_customers": 35,
+      "number_of_good_customers": 682,
+      "bad_customer_percentage": 4.8814504881,
+      "average_predicted_probability": 0.2510486303,
+      "lift": 1.1626285232,
+      "cumulative_bad_capture_%": 65.4485049834
+    },
+    {
+      "decile": 5,
+      "number_of_customers": 717,
+      "number_of_bad_customers": 27,
+      "number_of_good_customers": 690,
+      "bad_customer_percentage": 3.7656903766,
+      "average_predicted_probability": 0.2209869067,
+      "lift": 0.8968848608,
+      "cumulative_bad_capture_%": 74.4186046512
+    },
+    {
+      "decile": 6,
+      "number_of_customers": 716,
+      "number_of_bad_customers": 25,
+      "number_of_good_customers": 691,
+      "bad_customer_percentage": 3.4916201117,
+      "average_predicted_probability": 0.1955975493,
+      "lift": 0.8316087901,
+      "cumulative_bad_capture_%": 82.7242524917
+    },
+    {
+      "decile": 7,
+      "number_of_customers": 717,
+      "number_of_bad_customers": 13,
+      "number_of_good_customers": 704,
+      "bad_customer_percentage": 1.8131101813,
+      "average_predicted_probability": 0.1723826259,
+      "lift": 0.4318334515,
+      "cumulative_bad_capture_%": 87.0431893688
+    },
+    {
+      "decile": 8,
+      "number_of_customers": 717,
+      "number_of_bad_customers": 12,
+      "number_of_good_customers": 705,
+      "bad_customer_percentage": 1.6736401674,
+      "average_predicted_probability": 0.1478442273,
+      "lift": 0.3986154937,
+      "cumulative_bad_capture_%": 91.0299003322
+    },
+    {
+      "decile": 9,
+      "number_of_customers": 717,
+      "number_of_bad_customers": 16,
+      "number_of_good_customers": 701,
+      "bad_customer_percentage": 2.2315202232,
+      "average_predicted_probability": 0.1209865291,
+      "lift": 0.5314873249,
+      "cumulative_bad_capture_%": 96.3455149502
+    },
+    {
+      "decile": 10,
+      "number_of_customers": 717,
+      "number_of_bad_customers": 11,
+      "number_of_good_customers": 706,
+      "bad_customer_percentage": 1.5341701534,
+      "average_predicted_probability": 0.0790382571,
+      "lift": 0.3653975359,
+      "cumulative_bad_capture_%": 100.0
+    }
+  ],
+  "top_features": [
+    {
+      "feature": "feature_7",
+      "mutual_info": 0.0021456214,
+      "gain_share_%": 5.9692291377,
+      "interpretation": "Lower typical value for bad-credit customers"
+    },
+    {
+      "feature": "feature_3",
+      "mutual_info": 0.005064477,
+      "gain_share_%": 5.3133159758,
+      "interpretation": "Lower typical value for bad-credit customers"
+    },
+    {
+      "feature": "mean_diff_open_enquiry_dt",
+      "mutual_info": 0.003332135,
+      "gain_share_%": 4.7273272682,
+      "interpretation": "Lower typical value for bad-credit customers"
+    },
+    {
+      "feature": "payment_history_mean_length",
+      "mutual_info": 0.0038601787,
+      "gain_share_%": 4.6906610466,
+      "interpretation": "Lower typical value for bad-credit customers"
+    },
+    {
+      "feature": "mean_diff_lastpaymt_opened_dt",
+      "mutual_info": 0.0010696804,
+      "gain_share_%": 4.5947680149,
+      "interpretation": "Lower typical value for bad-credit customers"
+    },
+    {
+      "feature": "total_credit_limit",
+      "mutual_info": 0.0011567347,
+      "gain_share_%": 4.5915303924,
+      "interpretation": "Lower typical value for bad-credit customers"
+    },
+    {
+      "feature": "Ratio_currbalance_creditlimit",
+      "mutual_info": 0.0013837484,
+      "gain_share_%": 4.2963463753,
+      "interpretation": "Higher typical value for bad-credit customers"
+    },
+    {
+      "feature": "mean_enquiry_amt",
+      "mutual_info": 0.0029470925,
+      "gain_share_%": 4.1397134831,
+      "interpretation": "Higher typical value for bad-credit customers"
+    },
+    {
+      "feature": "total_diff_lastpaymt_opened_dt",
+      "mutual_info": 4.6303e-06,
+      "gain_share_%": 4.0457122274,
+      "interpretation": "Lower typical value for bad-credit customers"
+    },
+    {
+      "feature": "total_high_credit",
+      "mutual_info": 0.003218376,
+      "gain_share_%": 3.6729881328,
+      "interpretation": "Lower typical value for bad-credit customers"
+    },
+    {
+      "feature": "total_enquiry_amt",
+      "mutual_info": 0.0018285868,
+      "gain_share_%": 3.574128236,
+      "interpretation": "Higher typical value for bad-credit customers"
+    },
+    {
+      "feature": "mean_interest_rate",
+      "mutual_info": 0.0034389451,
+      "gain_share_%": 3.5634237884,
+      "interpretation": "Lower typical value for bad-credit customers"
+    },
+    {
+      "feature": "total_cur_balance",
+      "mutual_info": 0.0,
+      "gain_share_%": 3.3974651145,
+      "interpretation": "Higher typical value for bad-credit customers"
+    },
+    {
+      "feature": "feature_44",
+      "mutual_info": 0.0,
+      "gain_share_%": 3.3584489198,
+      "interpretation": "Same typical value"
+    },
+    {
+      "feature": "count_enquiry_recency_365",
+      "mutual_info": 0.0058752376,
+      "gain_share_%": 3.2290351189,
+      "interpretation": "Higher typical value for bad-credit customers"
+    },
+    {
+      "feature": "feature_29",
+      "mutual_info": 0.0006831746,
+      "gain_share_%": 3.0976111215,
+      "interpretation": "Lower typical value for bad-credit customers"
+    },
+    {
+      "feature": "max_freq_enquiry",
+      "mutual_info": 0.0,
+      "gain_share_%": 3.0240932407,
+      "interpretation": "Lower typical value for bad-credit customers"
+    },
+    {
+      "feature": "feature_30",
+      "mutual_info": 0.0018675544,
+      "gain_share_%": 2.9916101159,
+      "interpretation": "Higher typical value for bad-credit customers"
+    },
+    {
+      "feature": "feature_66",
+      "mutual_info": 0.0,
+      "gain_share_%": 2.9863443533,
+      "interpretation": "Lower typical value for bad-credit customers"
+    },
+    {
+      "feature": "feature_35",
+      "mutual_info": 0.0010346615,
+      "gain_share_%": 2.7044131215,
+      "interpretation": "Same typical value"
+    }
+  ]
+};
+
+render(RESULTS);
+
+// Highlight the current section in the nav
+const navLinks = [...document.querySelectorAll('nav.topnav a')];
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id));
+    }
+  });
+}, { rootMargin: '-40% 0px -55% 0px' });
+document.querySelectorAll('section.card').forEach(s => observer.observe(s));
+
+// Back-to-top button
+const toTop = document.getElementById('toTop');
+window.addEventListener('scroll', () => toTop.classList.toggle('show', window.scrollY > 400));
+</script>
+</body>
+</html>
