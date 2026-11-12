@@ -1,4 +1,4 @@
-# Bank GoodCredit – Credit Risk Prediction (PR-0015 / PRCL-0015)
+# Bank GoodCredit – Credit Risk Prediction 
 
 A machine learning project that predicts which credit card customers are likely to fall **30 or more days past due (30 DPD+)**, so the bank can act early and reduce credit losses.
 
@@ -214,4 +214,4 @@ Python · pandas · NumPy · scikit-learn · XGBoost · LightGBM · Matplotlib �
 
 ## Author
 
-Prepared as part of DataMites project PR-0015 (Bank GoodCredit – Credit Risk Prediction).
+Prepared as part of Intership at Rubixe - AI for solutions company (Bank GoodCredit – Credit Risk Prediction).
